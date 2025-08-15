@@ -19,7 +19,6 @@ Route::post('/webhooks/smaregi/contract-notify', [SmaregiContractController::cla
 Route::post('/webhooks/smaregi/transactions', [SmaregiWebhookController::class, 'transactions'])
     ->withoutMiddleware([Csrf::class]);   // ← これを付与
 
-Route::get('/', fn () => redirect()->route('dashboard'));
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
 });
