@@ -1,14 +1,15 @@
 <?php
 
-// 一時: ルート層の問題かどうかを確認
-Route::get('/', fn() => 'OK: root');
-
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Livewire\Dashboard;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Csrf;
 use App\Http\Controllers\Webhook\SmaregiWebhookController;
 use App\Http\Controllers\Webhook\SmaregiContractController;
+
+// 一時: ルート層の問題かどうかを確認
+Route::get('/', fn() => 'OK: root');
 
 // 契約通知（アプリ購入時の契約ID等）
 Route::post('/webhooks/smaregi/contract-notify', [SmaregiContractController::class, 'handle'])
