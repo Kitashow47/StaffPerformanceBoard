@@ -8,9 +8,6 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Csrf;
 use App\Http\Controllers\Webhook\SmaregiWebhookController;
 use App\Http\Controllers\Webhook\SmaregiContractController;
 
-// 一時: ルート層の問題かどうかを確認
-Route::get('/', fn() => 'OK: root');
-
 // 契約通知（アプリ購入時の契約ID等）
 Route::post('/webhooks/smaregi/contract-notify', [SmaregiContractController::class, 'handle'])
     ->withoutMiddleware([Csrf::class]);   // ← これを付与
@@ -19,14 +16,11 @@ Route::post('/webhooks/smaregi/contract-notify', [SmaregiContractController::cla
 Route::post('/webhooks/smaregi/transactions', [SmaregiWebhookController::class, 'transactions'])
     ->withoutMiddleware([Csrf::class]);   // ← これを付与
 
-    /*
+// --- アプリ本体 ---
+Route::get('/', fn () => redirect()->route('dashboard'));
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
 });
-*/
-
-// 一時: 認証を外して /dashboard を素の Blade 表示に
-Route::get('/dashboard', fn () => view('livewire.dashboard'))->name('dashboard');
 
 // --- 運用用：Shellなしで安全にartisanを叩く専用ルート（必ずJSONで返す） ---
 Route::post('/ops/artisan', function (\Illuminate\Http\Request $req) {
