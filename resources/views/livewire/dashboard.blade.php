@@ -1,6 +1,14 @@
 <x-layouts.app title="ダッシュボード">
-    <div class="max-w-4xl mx-auto px-6">
-        <h1 class="text-2xl font-bold mb-4">スタッフ売上ランキング（仮）</h1>
+    {{-- 10秒おきに自動再描画（Webhookで集計が更新される前提） --}}
+    <div wire:poll.10s class="max-w-4xl mx-auto px-6">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-2xl font-bold">スタッフ売上ランキング</h1>
+            <div class="space-x-2">
+                <button wire:click="setRange('today')" class="px-3 py-1 rounded {{ $range==='today'?'bg-indigo-600 text-white':'bg-gray-200' }}">今日</button>
+                <button wire:click="setRange('week')"  class="px-3 py-1 rounded {{ $range==='week' ?'bg-indigo-600 text-white':'bg-gray-200' }}">今週</button>
+                <button wire:click="setRange('month')" class="px-3 py-1 rounded {{ $range==='month'?'bg-indigo-600 text-white':'bg-gray-200' }}">今月</button>
+            </div>
+        </div>
 
         <div class="overflow-x-auto bg-white shadow rounded-lg">
             <table class="min-w-full">
@@ -12,19 +20,19 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    @foreach ($rows as $i => $r)
+                    @forelse ($rows as $i => $r)
                         <tr>
                             <td class="px-4 py-2">{{ $i + 1 }}</td>
-                            <td class="px-4 py-2">{{ $r['staff'] }}</td>
-                            <td class="px-4 py-2 text-right">¥{{ number_format($r['sales']) }}</td>
+                            <td class="px-4 py-2">{{ $r->staff }}</td>
+                            <td class="px-4 py-2 text-right">¥{{ number_format($r->total) }}</td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td class="px-4 py-8 text-center text-gray-500" colspan="3">データがありません</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-
-        <p class="text-sm text-gray-500 mt-4">
-            *いまはダミーデータです。次にスマレジAPIの実データへ差し替えます。
-        </p>
     </div>
 </x-layouts.app>
