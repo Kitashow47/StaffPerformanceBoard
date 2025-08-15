@@ -1,7 +1,7 @@
 <x-layouts.app title="ダッシュボード">
     <div class="max-w-4xl mx-auto px-6">
         <h1 class="text-2xl font-bold mb-4">スタッフ売上ランキング（仮）</h1>
-        
+
         <div class="overflow-x-auto bg-white shadow rounded-lg">
             <table class="min-w-full">
                 <thead class="bg-gray-50">
