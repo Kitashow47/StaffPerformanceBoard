@@ -1,1 +1,1 @@
-OK: livewire.dashboard view reached
+<x-layouts.app title="ダッシュボード">OK</x-layouts.app>
