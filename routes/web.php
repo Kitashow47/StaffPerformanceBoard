@@ -19,9 +19,14 @@ Route::post('/webhooks/smaregi/contract-notify', [SmaregiContractController::cla
 Route::post('/webhooks/smaregi/transactions', [SmaregiWebhookController::class, 'transactions'])
     ->withoutMiddleware([Csrf::class]);   // ← これを付与
 
+    /*
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
 });
+*/
+
+// 一時: 認証を外して /dashboard を素の Blade 表示に
+Route::get('/dashboard', fn () => view('livewire.dashboard'))->name('dashboard');
 
 // --- 運用用：Shellなしで安全にartisanを叩く専用ルート（必ずJSONで返す） ---
 Route::post('/ops/artisan', function (\Illuminate\Http\Request $req) {
