@@ -1,40 +1,54 @@
 <?php
 
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
-use App\Livewire\Dashboard;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Csrf;
+use App\Livewire\Dashboard;
 use App\Http\Controllers\Webhook\SmaregiWebhookController;
 use App\Http\Controllers\Webhook\SmaregiContractController;
-use Illuminate\Support\Facades\Schema;  // ← 追加
 
+// ★ 追加の use（DB と Schema）
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-// 契約通知（アプリ購入時の契約ID等）
+/* ========= Webhook (CSRF除外) ========= */
 Route::post('/webhooks/smaregi/contract-notify', [SmaregiContractController::class, 'handle'])
-    ->withoutMiddleware([Csrf::class]);   // ← これを付与
+    ->withoutMiddleware([Csrf::class]);
 
-// 取引Webhook（transactions）
 Route::post('/webhooks/smaregi/transactions', [SmaregiWebhookController::class, 'transactions'])
-    ->withoutMiddleware([Csrf::class]);   // ← これを付与
+    ->withoutMiddleware([Csrf::class]);
 
-// --- アプリ本体 ---
-
+/* ========= アプリ本体 ========= */
+Route::get('/', fn () => redirect()->route('dashboard'));
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', \App\Livewire\Dashboard::class)->name('dashboard');
+    Route::get('/dashboard', Dashboard::class)->name('dashboard');
+});
 
-    // ✅ 直近の Webhook 受信（保存済み）を確認
-    Route::get('/admin/debug/webhooks', function () {
-        return DB::table('webhook_events')
-            ->select('id','source','event_id','created_at','payload')
-            ->orderByDesc('id')->limit(20)->get();
-    });
+/* ========= DEBUG（認証の外。必ずこの形で！） ========= */
+// テーブルの有無チェック
+Route::get('/_diag_tables', fn() => response()->json([
+    'webhook_events'     => Schema::hasTable('webhook_events'),
+    'staff_daily_totals' => Schema::hasTable('staff_daily_totals'),
+]));
 
-    // ✅ 集計テーブルの最新値を確認
-    Route::get('/admin/debug/totals', function () {
-        return DB::table('staff_daily_totals')
-            ->orderByDesc('updated_at')->limit(20)->get();
-    });
+// 受信Webhookの直近20件（DB:webhook_events）
+Route::get('/admin/debug/webhooks', function () {
+    return DB::table('webhook_events')
+        ->select('id','source','event_id','created_at','payload')
+        ->orderByDesc('id')->limit(20)->get();
+});
+
+// 集計の直近20件（DB:staff_daily_totals）
+Route::get('/admin/debug/totals', function () {
+    return DB::table('staff_daily_totals')
+        ->orderByDesc('updated_at')->limit(20)->get();
+});
+
+// ルーティング確認用（登録済みルート一覧を見る）
+Route::get('/_routes', function () {
+    return collect(app('router')->getRoutes())->map(function ($r) {
+        return ['methods' => $r->methods(), 'uri' => $r->uri()];
+    })->values();
 });
 
 // --- 運用用：Shellなしで安全にartisanを叩く専用ルート（必ずJSONで返す） ---
@@ -85,27 +99,3 @@ Route::get('/_diag', function () {
 });
 
 require __DIR__.'/auth.php';
-
-// ★ デバッグ：テーブル存在チェック（まずここを見る）
-Route::get('/_diag_tables', fn() => response()->json([
-    'webhook_events'       => Schema::hasTable('webhook_events'),
-    'staff_daily_totals'   => Schema::hasTable('staff_daily_totals'),
-]));
-
-// ★ デバッグ：最新の受信Webhookを確認（保存先は DB:webhook_events）
-Route::get('/admin/debug/webhooks', function () {
-    return DB::table('webhook_events')
-        ->select('id','source','event_id','created_at','payload')
-        ->orderByDesc('id')
-        ->limit(20)
-        ->get();
-});
-
-// ★ デバッグ：集計テーブルの最新値を確認
-Route::get('/admin/debug/totals', function () {
-    return DB::table('staff_daily_totals')
-        ->orderByDesc('updated_at')
-        ->limit(20)
-        ->get();
-});
-
