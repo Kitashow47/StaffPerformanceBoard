@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class Dashboard extends Component
@@ -17,24 +18,26 @@ class Dashboard extends Component
 
     public function render()
     {
-        // 表示は日本時間基準
-        $nowJst = Carbon::now('Asia/Tokyo');
+    $nowJst = Carbon::now('Asia/Tokyo');
+    [$start, $end] = match ($this->range) {
+        'week'  => [$nowJst->copy()->startOfWeek(),  $nowJst->copy()->endOfWeek()],
+        'month' => [$nowJst->copy()->startOfMonth(), $nowJst->copy()->endOfMonth()],
+        default => [$nowJst->copy()->startOfDay(),   $nowJst->copy()->endOfDay()],
+    };
 
-        [$start, $end] = match ($this->range) {
-            'week'  => [$nowJst->copy()->startOfWeek(),  $nowJst->copy()->endOfWeek()],
-            'month' => [$nowJst->copy()->startOfMonth(), $nowJst->copy()->endOfMonth()],
-            default => [$nowJst->copy()->startOfDay(),   $nowJst->copy()->endOfDay()],
-        };
+    // ← テーブルが未作成でも500にしない
+    if (! Schema::hasTable('staff_daily_totals')) {
+        return view('livewire.dashboard', ['rows' => collect()]);
+    }
 
-        // staff_daily_totals（JST日付）から集計
-        $rows = DB::table('staff_daily_totals')
-            ->select('staff_code as staff', DB::raw('SUM(gross_amount) as total'))
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
-            ->groupBy('staff')
-            ->orderByDesc('total')
-            ->limit(50)
-            ->get();
+    $rows = DB::table('staff_daily_totals')
+        ->selectRaw('COALESCE(staff_code, "（不明）") as staff, SUM(COALESCE(gross_amount,0)) as total')
+        ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+        ->groupBy('staff')
+        ->orderByDesc('total')
+        ->limit(50)
+        ->get();
 
-        return view('livewire.dashboard', ['rows' => $rows]);
+    return view('livewire.dashboard', ['rows' => $rows]);
     }
 }
