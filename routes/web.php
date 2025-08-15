@@ -7,6 +7,8 @@ use App\Livewire\Dashboard;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Csrf;
 use App\Http\Controllers\Webhook\SmaregiWebhookController;
 use App\Http\Controllers\Webhook\SmaregiContractController;
+use Illuminate\Support\Facades\Schema;  // ← 追加
+
 
 // 契約通知（アプリ購入時の契約ID等）
 Route::post('/webhooks/smaregi/contract-notify', [SmaregiContractController::class, 'handle'])
@@ -83,3 +85,27 @@ Route::get('/_diag', function () {
 });
 
 require __DIR__.'/auth.php';
+
+// ★ デバッグ：テーブル存在チェック（まずここを見る）
+Route::get('/_diag_tables', fn() => response()->json([
+    'webhook_events'       => Schema::hasTable('webhook_events'),
+    'staff_daily_totals'   => Schema::hasTable('staff_daily_totals'),
+]));
+
+// ★ デバッグ：最新の受信Webhookを確認（保存先は DB:webhook_events）
+Route::get('/admin/debug/webhooks', function () {
+    return DB::table('webhook_events')
+        ->select('id','source','event_id','created_at','payload')
+        ->orderByDesc('id')
+        ->limit(20)
+        ->get();
+});
+
+// ★ デバッグ：集計テーブルの最新値を確認
+Route::get('/admin/debug/totals', function () {
+    return DB::table('staff_daily_totals')
+        ->orderByDesc('updated_at')
+        ->limit(20)
+        ->get();
+});
+
