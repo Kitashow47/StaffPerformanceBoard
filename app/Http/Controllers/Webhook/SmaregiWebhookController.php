@@ -66,18 +66,19 @@ class SmaregiWebhookController extends Controller
             return response()->json(['ok'=>true,'dup'=>true]);
         }
 
-        // ← ここを置き換え
+        // 即ACK → 後処理（同期/非同期を環境変数で切替）
         if (env('WEBHOOK_SYNC', false)) {
-            ProcessSmaregiTransaction::dispatchSync($headId);
+            \App\Jobs\ProcessSmaregiTransaction::dispatchSync($headId);
         } else {
-            if (method_exists(ProcessSmaregiTransaction::class, 'dispatchAfterResponse')) {
-                ProcessSmaregiTransaction::dispatchAfterResponse($headId);
+            if (method_exists(\App\Jobs\ProcessSmaregiTransaction::class, 'dispatchAfterResponse')) {
+                \App\Jobs\ProcessSmaregiTransaction::dispatchAfterResponse($headId);
             } else {
-                ProcessSmaregiTransaction::dispatch($headId);
+                \App\Jobs\ProcessSmaregiTransaction::dispatch($headId);
             }
         }
 
         return response()->json(['ok'=>true]);
+
     }
 
     private function ipInCidr(string $ip, string $cidr): bool
