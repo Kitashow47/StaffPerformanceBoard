@@ -5,18 +5,11 @@
       <h1 class="text-2xl font-bold">スタッフ売上ランキング（仮）</h1>
             {{-- ✅ 手動更新ボタン --}}
       <div class="space-x-2">
-        <button wire:click="$refresh" class="text-sm px-3 py-1 rounded border">更新</button>
+        <button wire:click="refreshData" class="text-sm px-3 py-1 rounded border">更新</button>
         <button wire:click="setRange('today')" class="text-sm px-3 py-1 rounded border">日</button>
         <button wire:click="setRange('week')"  class="text-sm px-3 py-1 rounded border">週</button>
         <button wire:click="setRange('month')" class="text-sm px-3 py-1 rounded border">月</button>
       </div>
-    </div>
-      <div class="space-x-2">
-        <button wire:click="setRange('today')" class="text-sm px-3 py-1 rounded border">日</button>
-        <button wire:click="setRange('week')"  class="text-sm px-3 py-1 rounded border">週</button>
-        <button wire:click="setRange('month')" class="text-sm px-3 py-1 rounded border">月</button>
-      </div>
-    </div>
 
     <div class="overflow-x-auto bg-white shadow rounded">
       <table class="min-w-full">
