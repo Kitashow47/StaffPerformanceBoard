@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Csrf;
 use App\Livewire\Dashboard;
 use App\Http\Controllers\Webhook\SmaregiWebhookController;
 use App\Http\Controllers\Webhook\SmaregiContractController;
+use App\Jobs\ProcessSmaregiTransaction;
 
 // ★ 追加の use（DB と Schema）
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,14 @@ Route::get('/_diag_tables', fn() => response()->json([
     'webhook_events'     => Schema::hasTable('webhook_events'),
     'staff_daily_totals' => Schema::hasTable('staff_daily_totals'),
 ]));
+
+// ✅ ジョブを手動実行（同期）するデバッグ用（終わったら削除OK）
+Route::get('/admin/debug/run-job', function (\Illuminate\Http\Request $req) {
+    $headId = $req->query('headId');
+    if (!$headId) return response()->json(['ok'=>false,'error'=>'missing headId'], 400);
+    ProcessSmaregiTransaction::dispatchSync($headId);
+    return response()->json(['ok'=>true,'headId'=>$headId]);
+});
 
 // 受信Webhookの直近20件（DB:webhook_events）
 Route::get('/admin/debug/webhooks', function () {
