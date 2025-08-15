@@ -1,5 +1,8 @@
 <?php
 
+// 一時: ルート層の問題かどうかを確認
+Route::get('/', fn() => 'OK: root');
+
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Dashboard;
