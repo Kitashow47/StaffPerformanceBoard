@@ -17,9 +17,22 @@ Route::post('/webhooks/smaregi/transactions', [SmaregiWebhookController::class, 
     ->withoutMiddleware([Csrf::class]);   // ← これを付与
 
 // --- アプリ本体 ---
-Route::get('/', fn () => redirect()->route('dashboard'));
+
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/dashboard', \App\Livewire\Dashboard::class)->name('dashboard');
+
+    // ✅ 直近の Webhook 受信（保存済み）を確認
+    Route::get('/admin/debug/webhooks', function () {
+        return DB::table('webhook_events')
+            ->select('id','source','event_id','created_at','payload')
+            ->orderByDesc('id')->limit(20)->get();
+    });
+
+    // ✅ 集計テーブルの最新値を確認
+    Route::get('/admin/debug/totals', function () {
+        return DB::table('staff_daily_totals')
+            ->orderByDesc('updated_at')->limit(20)->get();
+    });
 });
 
 // --- 運用用：Shellなしで安全にartisanを叩く専用ルート（必ずJSONで返す） ---
