@@ -6,12 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        Schema::create('contracts', function (Blueprint $t) {
-            $t->id();
-            $t->string('contract_id')->unique();
-            $t->json('raw')->nullable(); // 受信ペイロードの原文
-            $t->timestamps();
-        });
+        if (! Schema::hasTable('webhook_events')) { // ← 念のため存在チェック
+            Schema::create('webhook_events', function (Blueprint $t) {
+                $t->id();
+                $t->string('source', 50);
+                $t->string('event_id', 191)->nullable();
+                $t->string('fingerprint', 191)->unique();
+                $t->json('payload');
+                $t->timestamps();
+            });
+        }
     }
-    public function down(): void { Schema::dropIfExists('contracts'); }
+    public function down(): void {
+        Schema::dropIfExists('webhook_events');
+    }
 };
