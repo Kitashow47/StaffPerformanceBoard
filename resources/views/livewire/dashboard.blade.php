@@ -3,6 +3,14 @@
   <div class="max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-2xl font-bold">スタッフ売上ランキング（仮）</h1>
+            {{-- ✅ 手動更新ボタン --}}
+      <div class="space-x-2">
+        <button wire:click="$refresh" class="text-sm px-3 py-1 rounded border">更新</button>
+        <button wire:click="setRange('today')" class="text-sm px-3 py-1 rounded border">日</button>
+        <button wire:click="setRange('week')"  class="text-sm px-3 py-1 rounded border">週</button>
+        <button wire:click="setRange('month')" class="text-sm px-3 py-1 rounded border">月</button>
+      </div>
+    </div>
       <div class="space-x-2">
         <button wire:click="setRange('today')" class="text-sm px-3 py-1 rounded border">日</button>
         <button wire:click="setRange('week')"  class="text-sm px-3 py-1 rounded border">週</button>
@@ -41,8 +49,5 @@
 
     <p class="text-xs text-gray-400 mt-4">※ 10秒おきに自動更新（Webhook受信後に反映）</p>
   </div>
-
-  {{-- Livewireによるポーリング --}}
-  <div wire:poll.10s></div>
 
 </x-layouts.app>
