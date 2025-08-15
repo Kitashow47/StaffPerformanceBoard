@@ -50,4 +50,21 @@ Route::post('/ops/artisan', function (\Illuminate\Http\Request $req) {
 // --- ヘルスチェック（切り分け用・任意） ---
 Route::get('/healthz', fn() => response('OK', 200));
 
+// 診断: 500切り分け用（デプロイ後に一時アクセスして確認）
+Route::get('/_diag', function () {
+    $info = [
+        'php'            => PHP_VERSION,
+        'laravel'        => app()->version(),
+        'env'            => config('app.env'),
+        'debug'          => config('app.debug'),
+        'db_default'     => config('database.default'),
+        'can_db'         => false,
+        'vite_manifest'  => file_exists(public_path('build/manifest.json')),
+        'storage_link'   => is_link(public_path('storage')),
+        'has_dashboard'  => (bool) Route::has('dashboard'),
+    ];
+    try { DB::select('select 1'); $info['can_db'] = true; } catch (\Throwable $e) { $info['db_error'] = $e->getMessage(); }
+    return response()->json($info);
+});
+
 require __DIR__.'/auth.php';
